@@ -1,0 +1,48 @@
+name: Provision RBAC SPN
+
+on:
+  workflow_dispatch:
+    inputs:
+   
+      SPN_NAME:
+        description: "SPN (Service Principal Name)"
+        required: true
+        default: ""
+
+      ROLE_NAME: 
+        description: "Role Name"
+        required: true
+        default: ""
+
+      OWNER_UPN:
+        description: "Owner UPN of the SPN"
+        required: true
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    env:
+      # Define environment variables here
+      WORKDIR: ${{ github.workspace }}
+      SPN_NAME: ${{github.event.inputs.SPN_NAME }}
+      ROLE_NAME: ${{github.event.inputs.ROLE_NAME }}
+      OWNER_UPN: ${{github.event.inputs.OWNER_UPN }}
+      GRAPH_APPID: ${{vars.GRAPH_APPID }}
+      GRAPH_APPSECRET:  ${{secrets.GRAPH_APPSECRET }}
+      GRAPH_APPDOMAIN: ${{vars.GRAPH_APPDOMAIN }}
+      SENDER_UPN: ${{vars.SENDER_UPN }}
+  
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZ_SPN_APP_MANAGEMENT }}
+          allow-no-subscriptions: true
+           
+
+      - name: Run PowerShell
+        run: pwsh ./provision-rbac-sp/run.ps1
+        shell: pwsh
